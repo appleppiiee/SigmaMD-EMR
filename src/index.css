@@ -1,0 +1,12 @@
+/** File name: index.css
+** Name: Apple Jan Tacardon
+** ID: 301426032
+** Date: February 5, 2025
+**/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+    scroll-behavior: smooth ;
+}
