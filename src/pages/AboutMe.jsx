@@ -52,7 +52,7 @@ const AboutMe = () => {
                     <div className="flex justify-center pt-3 max-w-[200px] w-full items-center">
                         <FaLinkedinIn className="cursor-pointer hover:scale-110 transition" size={20} title="LinkedIn"/>
                         <a 
-                          href="../src/assets/applejantacardon-resume2025.pdf" 
+                          href="/applejantacardon-resume2025.pdf" 
                           title="Download Resume"
                           download>
                           <AiOutlineFilePdf size={20} color="black" className="cursor-pointer hover:scale-110 transition" />
