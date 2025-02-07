@@ -7,6 +7,7 @@ import React from 'react';
 import { TypeAnimation } from 'react-type-animation'
 import { motion } from 'framer-motion'
 import  BackgroundVideo from "../components/BackgroundVideo";
+import LogoImg from "../assets/logo.svg";
 
 const Contact = () => {
   return (
@@ -25,7 +26,7 @@ const Contact = () => {
                             ease: "easeInOut",
                         },
                         }}
-                        src="../src/assets/logo.svg"
+                        src="{LogoImg}"
                         className="w-[100px] h-[100px]"
                     />          
                     <h1 className="text-4xl font-bold">Contact Me</h1>

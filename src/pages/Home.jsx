@@ -8,6 +8,7 @@ import { TypeAnimation } from 'react-type-animation'
 import { motion } from 'framer-motion'
 import { FaLinkedinIn } from 'react-icons/fa';
 import  BackgroundVideo from "../components/BackgroundVideo";
+import LogoImg from "../assets/logo.svg";
 
 const Home = () => {
     return (
@@ -26,7 +27,7 @@ const Home = () => {
                             ease: "easeInOut",
                         },
                         }}
-                        src="../src/assets/logo.svg"
+                        src="{LogoImg}"
                         className="w-[250px] h-[250px]"
                     />          
                     <h1 className="text-4xl font-bold">Hi! I'm Apple! </h1>
