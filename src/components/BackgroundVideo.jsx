@@ -5,7 +5,7 @@
 **/
 
 import React,{useState} from "react";
-import banner from "../assets/banner.mp4";
+import banner from "/banner.mp4";
 
 const BackgroundVideo = () => {
   return (

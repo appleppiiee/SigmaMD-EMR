@@ -8,7 +8,7 @@ import { TypeAnimation } from 'react-type-animation'
 import { motion } from 'framer-motion'
 import { FaLinkedinIn } from 'react-icons/fa';
 import  BackgroundVideo from "../components/BackgroundVideo";
-import LogoImg from "../assets/logo.svg";
+import LogoImg from "/logo.svg";
 
 const Home = () => {
     return (

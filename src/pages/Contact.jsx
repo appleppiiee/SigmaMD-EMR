@@ -7,7 +7,7 @@ import React from 'react';
 import { TypeAnimation } from 'react-type-animation'
 import { motion } from 'framer-motion'
 import  BackgroundVideo from "../components/BackgroundVideo";
-import LogoImg from "../assets/logo.svg";
+import LogoImg from "/logo.svg";
 
 const Contact = () => {
   return (
