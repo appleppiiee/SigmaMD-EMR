@@ -28,7 +28,7 @@ const AboutMe = () => {
                             ease: "easeInOut",
                         },
                         }}
-                        src="../src/assets/profile2.svg"
+                        src="/profile2.svg"
                         className="w-[200px] h-[200px]"
                     />          
                     <h1 className="text-4xl font-bold pt-3">Apple Jan Tacardon</h1>

@@ -16,7 +16,7 @@ const BackgroundVideo = () => {
         playsInline
         className="w-full h-full h-screen object-cover object-left scale-x-[-1]"
     >
-      <source src="{banner}" type="video/mp4" />      
+      <source src="/banner.mp4" type="video/mp4" />      
       Your browser does not support the video tag.
     </video>
   );

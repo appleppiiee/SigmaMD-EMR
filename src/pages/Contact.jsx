@@ -26,7 +26,7 @@ const Contact = () => {
                             ease: "easeInOut",
                         },
                         }}
-                        src="{LogoImg}"
+                        src="/logo.svg"
                         className="w-[100px] h-[100px]"
                     />          
                     <h1 className="text-4xl font-bold">Contact Me</h1>

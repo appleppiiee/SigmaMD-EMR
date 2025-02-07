@@ -27,7 +27,7 @@ const Home = () => {
                             ease: "easeInOut",
                         },
                         }}
-                        src="{LogoImg}"
+                        src="/logo.svg"
                         className="w-[250px] h-[250px]"
                     />          
                     <h1 className="text-4xl font-bold">Hi! I'm Apple! </h1>
