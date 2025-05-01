@@ -1,30 +1,58 @@
-/** File name: App.jsx
-** Name: Apple Jan Tacardon
-** ID: 301426032
-** Date: February 5, 2025
-**/
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidenav from "./components/Sidenav";
-import Home from "./pages/Home";
-import AboutMe from "./pages/AboutMe";
-import Projects from "./pages/Projects";
-import Services from "./pages/Services";
-import Contact from "./pages/Contact";
+// App.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import "./css/dashboard.css";            // ← make sure this is here
+import LandingNavbar from "./Landing/LandingNavbar";
+import LandingPage   from "./Landing/Landing";
+import Signin        from "./pages/Signin";
+import Signup        from "./pages/Signup";
+import Appointments  from "./pages/Appointments";
+import SigmaPanel    from "./pages/SigmaPanel";
+import Checkout      from "./pages/Checkout";
+import Patient       from "./pages/Patients";
+import Clinic        from "./pages/Clinic";
+import Users         from "./pages/Users";
+import Sidebar       from "./components/Sidebar";
+import Topbar        from "./components/DashboardTopbar";
+import DashboardPage from "./components/DashboardPage";
 
-function App() {
-    return (
-        <Router>
-            <Sidenav /> {/* Sidenav remains accessible on all pages */}
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<AboutMe />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/contact" element={<Contact />} />
-            </Routes>
-        </Router>
-    );
+const DashboardLayout = ({ children }) => (
+  <div className="dashboard-container">
+    <Sidebar />                                 {/* already has .sidebar-wall */}
+    <div className="main-content">
+      <Topbar />                                {/* already has .dashboard-topbar */}
+      <div className="dashboard-main-area">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* public */}
+        <Route path="/"       element={<><LandingNavbar /><LandingPage/></>} />
+        <Route path="/signin" element={<><LandingNavbar /><Signin/></>} />
+        <Route path="/signup" element={<><LandingNavbar /><Signup/></>} />
+
+        {/* all dashboard pages → same shell */}
+        <Route path="/dashboard"
+          element={ <DashboardLayout><DashboardPage/></DashboardLayout> } />
+
+        <Route path="/appointments"
+          element={ <DashboardLayout><Appointments/></DashboardLayout> } />
+        <Route path="/sigmapanel"
+          element={ <DashboardLayout><SigmaPanel/></DashboardLayout> } />
+        <Route path="/checkout"
+          element={ <DashboardLayout><Checkout/></DashboardLayout> } />
+        <Route path="/patient"
+          element={ <DashboardLayout><Patient/></DashboardLayout> } />
+        <Route path="/settings/user"
+          element={ <DashboardLayout><Users/></DashboardLayout> } />
+        <Route path="/settings/clinic"
+          element={ <DashboardLayout><Clinic/></DashboardLayout> } />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App;

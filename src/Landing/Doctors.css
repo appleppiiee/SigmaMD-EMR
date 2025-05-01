@@ -1,0 +1,54 @@
+.doctors-section {
+  background-color: #ffffff;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+  justify-items: center;
+}
+
+.doctor-card {
+  background-color: #f9fdf9;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+  max-width: 300px;
+}
+
+.doctor-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+
+
+.doctor-info {
+  padding: 1.5rem;
+}
+
+.doctor-info h4 {
+  font-size: 1.2rem;
+  color: #4caf50;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.doctor-info p {
+  font-size: 1rem;
+  color: #555;
+  margin: 0;
+}
