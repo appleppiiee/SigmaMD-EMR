@@ -1,19 +1,22 @@
+// routes/appointment.routes.js
 import express from 'express';
-import * as appointmentCtrl from '../controllers/appointment.controller.js';
+import {
+  listAppointments,
+  createAppointment,
+  getAppointment,
+  updateAppointment
+} from '../controllers/appointment.controller.js';
 
 const router = express.Router();
 
-// GET    /api/appointments
-router.get('/', appointmentCtrl.listAppointments);
+router
+  .route('/')
+    .get(listAppointments)
+    .post(createAppointment);
 
-// POST   /api/appointments
-router.post('/', appointmentCtrl.createAppointment);
-
-// GET    /api/appointments/:id
-router.get('/:id', appointmentCtrl.getAppointment);
-
-// PUT    /api/appointments/:id
-router.put('/:id', appointmentCtrl.updateAppointment);
-
+router
+  .route('/:appointmentId')
+    .get(getAppointment)
+    .put(updateAppointment);
 
 export default router;

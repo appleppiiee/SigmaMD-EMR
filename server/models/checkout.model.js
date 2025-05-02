@@ -1,95 +1,37 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
-const checkoutSchema = new mongoose.Schema({
-  
-  appointmentID: {
-    type: String,
-    required: [true, 'Appointment ID is required'],
-  },
-  sigmapanelID: {
-    type: String,
-    required: [true, 'Sigmapanel ID is required'],
-  },
-  checkInDate: {
-    type: Date,
-    required: [true, 'Check-in date is required'],
-  },
-  checkInTime: {
-    type: String,
-    required: [true, 'Check-in time is required'],
-  },
-  particulars: {
-    type: String,
-    required: [true, 'Particulars are required'],
-  },
-  quantity: {
-    type: Number,
-    required: [true, 'Quantity is required'],
-  },
-  amount: {
-    type: Number,
-    required: [true, 'Amount is required'],
-  },
-  paymentMethod: {
-    type: String,
-    enum: ['Cash', 'HMO'],
-    required: [true, 'Payment method is required'],
-  },
-  amountPaid: {
-    type: Number,
-    required: [true, 'Amount paid is required'],
-  },
-  patientID: {
-    type: String,
-    // ref: 'Patient',
-    required: [true, 'Patient ID is required'],
-  },
-  providerID: {
-    type: String,
-    // ref: 'Users',
-    required: [true, 'Health care provider ID is required'],
-  },
-  adminID: {
-    // type: mongoose.Schema.Types.ObjectId,
-    type: String,
-    // ref: 'Users',
-    required: [true, 'Health care admin ID is required'],
-  },
-  hmoName: {
-    type: String,
-  },
-  hmoPoc: {
-    type: String,  
-  },
-  hmoContactNo: {
-    type: String,
-  },
-  clinicID: {
-    type: String,
-    // ref: 'Clinic',
-    required: [true, 'Clinic ID is required'],
-  },
-  remarks: {
-    type: String,
-  },
-  checkoutStatus: {
-    type: String,
-    enum: ['Pending', 'Completed', 'Cancelled'],
-    required: [true, 'Checkout status is required'],
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-  status: {
-    type: String,
-    trim: true,
-    default: "a", //'a' for active, 'i' for inactive
-  },
-});
+const ItemSchema = new mongoose.Schema({
+  description: { type: String, required: true },
+  type:        { type: String, required: true },
+  price:       { type: Number, required: true },
+  quantity:    { type: Number, required: true },
+  amount:      { type: Number, required: true }
+}, { _id: false })
 
-export default mongoose.model('Checkout', checkoutSchema);
+const CheckoutSchema = new mongoose.Schema({
+  appointmentID: { type: mongoose.Schema.Types.ObjectId, ref: 'Appointment', required: true },
+  patientID:     { type: mongoose.Schema.Types.ObjectId, ref: 'Patient',     required: true },
+  clinicID:      { type: mongoose.Schema.Types.ObjectId, ref: 'Clinic',      required: true },
+  sigmapanelID:  { type: mongoose.Schema.Types.ObjectId, ref: 'SigmaPanel',  required: true },
+  doctorID:      { type: mongoose.Schema.Types.ObjectId, ref: 'User',        required: true },
+
+  checkInDate: { type: Date,   required: true },
+  checkInTime: { type: String, required: true },
+
+  items:      { type: [ItemSchema], default: [] },
+
+  subtotal:  { type: Number, required: true },
+  taxRate:   { type: Number, default: 0.13 },
+  taxAmount: { type: Number, required: true },
+  total:     { type: Number, required: true },
+
+  payment: {
+    method:       { type: String, required: true },
+    cashReceived: { type: Number, required: true },
+    changeDue:    { type: Number, required: true }
+  },
+
+  checkoutStatus: { type: String, enum: ['Pending','Completed'], default: 'Pending' }
+}, { timestamps: true })
+
+export default mongoose.model('Checkout', CheckoutSchema)

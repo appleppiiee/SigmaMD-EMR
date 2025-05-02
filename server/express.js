@@ -24,7 +24,6 @@ app.use(cors());
 app.use('/api/clinics', clinicRoutes); 
 app.use('/api/sigmapanels', sigmapanelRoutes); 
 app.use('/api/checkouts', checkoutRoutes); 
-// app.use('/', checkoutRoutes);  
 app.use('/api/users', userRoutes); 
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/patients', patientRoutes);

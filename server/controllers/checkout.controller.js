@@ -1,72 +1,106 @@
-import Checkout from '../models/checkout.model.js';
-import extend from 'lodash/extend.js';
-import errorHandler from './error.controller.js';
+import Checkout from '../models/checkout.model.js'
 
-const create = async (req, res) => {
-  const checkout = new Checkout(req.body);
+/**
+ * GET  /api/checkouts
+ */
+export const listCheckouts = async (req, res) => {
   try {
-    await checkout.save();
-    return res.status(200).json({
-      message: "Checkout successfully created!",
-    });
-  } catch (err) {
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err),
-    });
+    const all = await Checkout.find()
+      .populate('appointmentID patientID clinicID sigmapanelID doctorID')
+      .sort('-createdAt')
+    res.json(all)
+  } catch(err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to list checkouts.' })
   }
-};
+}
 
-const list = async (req, res) => {
+/**
+ * GET  /api/checkouts/:checkoutId
+ */
+export const getCheckout = async (req, res) => {
   try {
-    const checkouts = await Checkout.find()
-      .select('appointmentID sigmapanelID checkInDate checkInTime particulars quantity amount paymentMethod amountPaid patientID providerID adminID hmoName hmoPOC hmoContactNo clinicID remarks checkoutStatus createdAt updatedAt status');
-    return res.json(checkouts);
-  } catch (err) {
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err),
-    });
+    const one = await Checkout.findById(req.params.checkoutId)
+      .populate('appointmentID patientID clinicID sigmapanelID doctorID')
+    if (!one) return res.status(404).json({ message: 'Not found' })
+    res.json(one)
+  } catch(err) {
+    console.error(err)
+    res.status(500).json({ message: 'Failed to fetch checkout.' })
   }
-};
+}
 
-const checkoutByID = async (req, res, next, id) => {
+/**
+ * POST /api/checkouts
+ */
+export const createCheckout = async (req, res) => {
   try {
-    const checkout = await Checkout.findById(id);
-    if (!checkout) return res.status('400').json({
-      error: "Checkout not found",
-    });
-    req.profile = checkout;
-    next();
-  } catch (err) {
-    return res.status('400').json({
-      error: "Could not retrieve checkout",
-    });
+    const {
+      appointmentID, patientID, clinicID, sigmapanelID, doctorID,
+      checkInDate, checkInTime,
+      items,
+      payment: { method, cashReceived, changeDue }
+    } = req.body
+
+    // server‐side recompute
+    const subtotal  = items.reduce((s, i) => s + i.amount, 0)
+    const taxRate   = 0.13
+    const taxAmount = parseFloat((subtotal * taxRate).toFixed(2))
+    const total     = parseFloat((subtotal + taxAmount).toFixed(2))
+
+    const chk = await Checkout.create({
+      appointmentID, patientID, clinicID, sigmapanelID, doctorID,
+      checkInDate, checkInTime,
+      items,
+      subtotal, taxRate, taxAmount, total,
+      payment: { method, cashReceived, changeDue: parseFloat(changeDue.toFixed(2)) },
+      checkoutStatus: 'Completed'
+    })
+
+    res.status(201).json(chk)
+  } catch(err) {
+    console.error(err)
+    res.status(400).json({ message: err.message })
   }
-};
+}
 
-const read = (req, res) => {
-  req.profile.updatedAt = undefined;  
-  return res.json(req.profile);
-};
-
-const update = async (req, res) => {
+/**
+ * PUT  /api/checkouts/:checkoutId
+ */
+export const updateCheckout = async (req, res) => {
   try {
-    let checkout = req.profile;
-    checkout = extend(checkout, req.body);
-    checkout.updatedAt = Date.now();
-    await checkout.save();
-    res.json(checkout);
-  } catch (err) {
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err),
-    });
+    // find existing
+    const existing = await Checkout.findById(req.params.checkoutId)
+    if (!existing) return res.status(404).json({ message: 'Not found' })
+
+    // merge in updates
+    const data = req.body
+    // if items changed, recompute totals again
+    if (data.items) {
+      const subtotal  = data.items.reduce((s,i) => s + i.amount, 0)
+      const taxRate   = 0.13
+      const taxAmount = parseFloat((subtotal * taxRate).toFixed(2))
+      const total     = parseFloat((subtotal + taxAmount).toFixed(2))
+      existing.subtotal  = subtotal
+      existing.taxRate   = taxRate
+      existing.taxAmount = taxAmount
+      existing.total     = total
+    }
+
+    // allow updating payment.* or checkoutStatus, etc
+    if (data.payment) {
+      existing.payment.method       = data.payment.method       ?? existing.payment.method
+      existing.payment.cashReceived = data.payment.cashReceived ?? existing.payment.cashReceived
+      existing.payment.changeDue    = data.payment.changeDue    ?? existing.payment.changeDue
+    }
+    if (data.checkoutStatus) existing.checkoutStatus = data.checkoutStatus
+
+    // you could allow checkInDate, checkInTime, doctorID, etc
+
+    const updated = await existing.save()
+    res.json(updated)
+  } catch(err) {
+    console.error(err)
+    res.status(400).json({ message: err.message })
   }
-};
-
-
-export default {
-  create,
-  checkoutByID,
-  read,
-  list,
-  update,
-};
+}

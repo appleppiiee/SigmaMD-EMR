@@ -1,14 +1,17 @@
+// controllers/appointment.controller.js
 import Appointment from '../models/appointment.model.js';
 
 const populateAll = [
   { path: 'patient', select: 'firstname lastname dob sex' },
   { path: 'doctor',  select: 'firstName lastName' },
-  { path: 'clinic',  select: 'name' },
+  { path: 'clinic',  select: 'name nameaddress' },
 ];
 
+// GET /api/appointments
 export const listAppointments = async (req, res) => {
   try {
-    const appts = await Appointment.find().populate(populateAll);
+    const appts = await Appointment.find()
+      .populate(populateAll);
     return res.json(appts);
   } catch (err) {
     console.error('listAppointments error:', err);
@@ -16,9 +19,9 @@ export const listAppointments = async (req, res) => {
   }
 };
 
+// POST /api/appointments
 export const createAppointment = async (req, res) => {
   try {
-    // pull only what you sent from the client:
     const {
       patient,
       doctor,
@@ -32,7 +35,6 @@ export const createAppointment = async (req, res) => {
 
     const datetime = new Date(`${date}T${time}`);
 
-    // notice: we do *not* pass `status` here, so the schema default kicks in
     const appt = new Appointment({
       patient,
       doctor,
@@ -47,22 +49,20 @@ export const createAppointment = async (req, res) => {
 
     await appt.save();
 
-    
-    const full = await Appointment
-      .findById(appt._id)
-      .populate(populateAll);
-
-    res.status(201).json(full);
+    // re‐fetch & populate
+    const full = await Appointment.findById(appt._id).populate(populateAll);
+    return res.status(201).json(full);
   } catch (err) {
     console.error('createAppointment error:', err);
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 
-
+// GET /api/appointments/:appointmentId
 export const getAppointment = async (req, res) => {
   try {
-    const appt = await Appointment.findById(req.params.id).populate(populateAll);
+    const { appointmentId } = req.params;
+    const appt = await Appointment.findById(appointmentId).populate(populateAll);
     if (!appt) return res.status(404).json({ error: 'Appointment not found' });
     return res.json(appt);
   } catch (err) {
@@ -71,9 +71,10 @@ export const getAppointment = async (req, res) => {
   }
 };
 
+// PUT /api/appointments/:appointmentId
 export const updateAppointment = async (req, res) => {
   try {
-    // only allow certain fields
+    const { appointmentId } = req.params;
     const allowed = ['patient','doctor','clinic','purpose','date','time','started','ended','paymentMethod','hmo','status'];
     const updates = {};
     for (let key of allowed) {
@@ -82,8 +83,9 @@ export const updateAppointment = async (req, res) => {
     if (updates.date && updates.time) {
       updates.datetime = new Date(`${updates.date}T${updates.time}`);
     }
+
     const appt = await Appointment.findByIdAndUpdate(
-      req.params.id,
+      appointmentId,
       updates,
       { new: true }
     ).populate(populateAll);
@@ -95,5 +97,3 @@ export const updateAppointment = async (req, res) => {
     return res.status(400).json({ error: 'Failed to update appointment', details: err.message });
   }
 };
-
-

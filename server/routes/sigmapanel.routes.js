@@ -1,13 +1,26 @@
-import express from 'express'
-import sigmapanelCtrl from '../controllers/sigmapanel.controller.js' 
-const router = express.Router()
-router.route('/api/sigmapanels').post(sigmapanelCtrl.create)
-router.route('/api/sigmapanels').get(sigmapanelCtrl.list)
-router.param('sigmapanelId', sigmapanelCtrl.sigmapanelByID)
-router.route('/api/sigmapanels/:sigmapanelId').get(sigmapanelCtrl.read)
-router.route('/api/sigmapanels/:sigmapanelId').put(sigmapanelCtrl.update)
+// src/routes/sigmapanel.routes.js
+import express from 'express';
+import {
+  listSigmapanels,
+  createSigmapanel,
+  getSigmapanel,
+  updateSigmapanel
+} from '../controllers/sigmapanel.controller.js';
 
+const router = express.Router();
 
-export default router
+// GET /api/sigmapanels
+// POST /api/sigmapanels
+router
+  .route('/')
+  .get(listSigmapanels)
+  .post(createSigmapanel);
 
+// GET /api/sigmapanels/:id
+// PUT /api/sigmapanels/:id
+router
+  .route('/:id')
+  .get(getSigmapanel)
+  .put(updateSigmapanel);
 
+export default router;

@@ -1,77 +1,66 @@
+// src/controllers/sigmapanel.controller.js
 import Sigmapanel from '../models/sigmapanel.model.js';
-import extend from 'lodash/extend.js';
-import errorHandler from './error.controller.js';
 
-const create = async (req, res) => {
+const populateAll = [
+  { path: 'patientID',    select: 'firstname lastname dob sex' },
+  { path: 'doctorID',     select: 'firstName lastName'      },
+  { path: 'appointmentID', select: 'date time'              }
+];
+
+export const listSigmapanels = async (req, res) => {
   try {
-    console.log("Creating sigmapanel with:", req.body);
-    const sigmapanel = new Sigmapanel(req.body);
-    await sigmapanel.save();
-    return res.status(200).json({
-      message: "Successfully Created!"
-    });
+    if (req.query.appointmentID) {
+      // findOne by appointmentID
+      const panel = await Sigmapanel
+        .findOne({ appointmentID: req.query.appointmentID })
+        .populate(populateAll);
+      return res.json(panel);
+    }
+    const panels = await Sigmapanel.find().populate(populateAll);
+    res.json(panels);
   } catch (err) {
-    console.error("Create error:", err);
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    });
+    console.error('listSigmapanels error:', err);
+    res.status(500).json({ error: 'Failed to list sigma panels' });
   }
 };
 
-const list = async (req, res) => {
+export const createSigmapanel = async (req, res) => {
   try {
-    let sigmapanels = await Sigmapanel.find()
-      .select('patientID appointmentID doctorID visitDateTime vHeight vWeight vBmi vTemp vBloodPressure vPulseRate mhMedicalHistory mhFamilyHistory mhSocialHistory mhAllergies mhCurrentMedications diagnosis plMedication plReferrals plFollowup plProcedures notes createdAt updatedAt status')
-      .populate('patientID', 'firstname lastname')
-      .populate('doctorID', 'firstName lastName')
-      .populate('appointmentID', 'datetime');
-    res.json(sigmapanels);
+    const panel = new Sigmapanel(req.body);
+    await panel.save();
+    const full = await Sigmapanel.findById(panel._id).populate(populateAll);
+    res.status(201).json(full);
   } catch (err) {
-    console.error("List error:", err);
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    });
+    console.error('createSigmapanel error:', err);
+    res.status(400).json({ error: err.message });
   }
 };
 
-const sigmapanelByID = async (req, res, next, id) => {
+export const updateSigmapanel = async (req, res) => {
   try {
-    let sigmapanel = await Sigmapanel.findById(id)
-      .populate('patientID')
-      .populate('doctorID')
-      .populate('appointmentID');
-    if (!sigmapanel)
-      return res.status(400).json({ error: "sigmapanel not found" });
-    req.sigmapanel = sigmapanel;
-    next();
+    const updates = { ...req.body };
+    const panel = await Sigmapanel.findByIdAndUpdate(
+      req.params.id,
+      updates,
+      { new: true }
+    ).populate(populateAll);
+    if (!panel) return res.status(404).json({ error: 'Sigma panel not found' });
+    res.json(panel);
   } catch (err) {
-    console.error("Find by ID error:", err);
-    return res.status(400).json({ error: "Could not retrieve sigmapanel" });
+    console.error('updateSigmapanel error:', err);
+    res.status(400).json({ error: err.message });
   }
 };
 
-const read = (req, res) => {
-  return res.json(req.sigmapanel);
-};
-
-const update = async (req, res) => {
+export const getSigmapanel = async (req, res) => {
   try {
-    let sigmapanel = req.sigmapanel;
-    sigmapanel = extend(sigmapanel, req.body);
-    await sigmapanel.save();
-    res.json(sigmapanel);
+    const panel = await Sigmapanel
+      .findById(req.params.id)
+      .populate(populateAll);
+    if (!panel) return res.status(404).json({ error: 'Sigma panel not found' });
+    res.json(panel);
   } catch (err) {
-    console.error("Update error:", err);
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    });
+    console.error('getSigmapanel error:', err);
+    res.status(400).json({ error: 'Invalid sigma panel ID' });
   }
-};
-
-export default {
-  create,
-  sigmapanelByID,
-  read,
-  list,
-  update
 };
