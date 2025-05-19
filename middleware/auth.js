@@ -1,28 +1,34 @@
+// src/middleware/auth.js
 import jwt from "jsonwebtoken";
+import User from "../server/models/user.model.js";
 
-// Middleware to check if a valid token is provided
-const requireSignin = (req, res, next) => {
-  const token = req.headers.authorization;
-  if (!token) return res.status(401).json({ error: "No token provided." });
+const SECRET = process.env.JWT_SECRET || "sigma-secret";
 
-  try {
-    const decoded = jwt.verify(token.replace("Bearer ", ""), "sigma-secret");
-    req.auth = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: "Invalid token." });
+export const ensureAuth = async (req, res, next) => {
+  const auth = req.headers.authorization;
+  if (!auth?.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "No token provided." });
   }
+
+  let payload;
+  try {
+    payload = jwt.verify(auth.replace("Bearer ", ""), SECRET);
+  } catch {
+    return res.status(403).json({ error: "Invalid token." });
+  }
+
+  const user = await User.findById(payload.sub).select("-password");
+  if (!user) {
+    return res.status(401).json({ error: "User not found." });
+  }
+
+  req.user = { id: user._id, userType: user.userType };
+  next();
 };
 
-// Middleware to restrict access based on userType (e.g., admin, provider)
-const requireRole = (roles) => {
-  return (req, res, next) => {
-    const userRole = req.auth?.userType;
-    if (!userRole || !roles.includes(userRole)) {
-      return res.status(403).json({ error: "Forbidden: Insufficient role" });
-    }
-    next();
-  };
+export const requireRole = roles => (req, res, next) => {
+  if (!roles.includes(req.user.userType)) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+  next();
 };
-
-export { requireSignin, requireRole };

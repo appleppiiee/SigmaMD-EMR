@@ -31,7 +31,7 @@ const CheckoutSchema = new mongoose.Schema({
     changeDue:    { type: Number, required: true }
   },
 
-  checkoutStatus: { type: String, enum: ['Pending','Completed'], default: 'Pending' }
+  checkoutStatus: { type: String, enum: ['Pending','Completed'], default: 'Completed' }
 }, { timestamps: true })
 
 export default mongoose.model('Checkout', CheckoutSchema)

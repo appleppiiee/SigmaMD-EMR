@@ -16,15 +16,15 @@ const UserSchema = new mongoose.Schema({
     required: "Last name is required",
     trim: true
   },
+  dob: {
+    type: Date,
+    required: 'Date of birth is required'
+  },
   mobileNo: {
     type: String,
     required: "Mobile number is required",
     trim: true
-  },
-  phoneNo: {
-    type: String,
-    trim: true
-  },
+  },  
   email: {
     type: String,
     required: "Email is required",
@@ -35,41 +35,42 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: "Password is required",
+    default: "12345678",//will be updated once user resets password
     select: false
   },
   userType: {
     type: String,
-    enum: ["admin", "provider", "secretary"],
+    enum: ["admin", "physician", "secretary"],
     required: "User type is required"
   },
   doctorType: {
-    type: String // e.g. "Surgeon", "Psychiatrist"
+    type: String, // e.g. "Surgeon", "Psychiatrist"
+    required: "Doctor type is required",
   },
   specialization: {
-    type: String // e.g. "ENT", "Cardiology"
+    type: String, // e.g. "ENT", "Cardiology"
+    required: "Specialization is required"
   },
   availability: {
-    type: String // e.g. "Mon-Fri, 9AM-5PM"
+    type: String, // e.g. "Mon-Fri, 9AM-5PM",
+    required: "Availability is required"
   },
-  clinicRoomNo: {
-    type: String // e.g. "Room 101", "Clinic B2"
-  },
+  clinicID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Clinic',
+      required: true,
+    },
   remarks: {
     type: String
-  },  
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    immutable: true
-  },
-  updatedAt: {
-    type: Date
-  },
+  },    
   status: {
     type: String,
     trim: true,
     default: "a", //'a' for active, 'i' for inactive
   }
-}, { versionKey: false });
+}, { 
+  timestamps: true,
+  versionKey: false 
+});
 
 export default mongoose.model("User", UserSchema);

@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // all /api/* requests will be forwarded to your real server:
       '/api': {
-        target: 'http://localhost:3000',   // ← whatever port your Express app listens on
+        target: 'http://localhost:3000',   
         changeOrigin: true,
         secure: false,
       }

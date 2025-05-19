@@ -9,18 +9,35 @@ const populateAll = [
 
 export const listSigmapanels = async (req, res) => {
   try {
-    if (req.query.appointmentID) {
-      // findOne by appointmentID
-      const panel = await Sigmapanel
-        .findOne({ appointmentID: req.query.appointmentID })
-        .populate(populateAll);
-      return res.json(panel);
+    const { appointmentID, patientID } = req.query;
+
+    let query = {};
+    if (appointmentID) {
+      query.appointmentID = appointmentID;
+    } else if (patientID) {
+      query.patientID = patientID;
     }
-    const panels = await Sigmapanel.find().populate(populateAll);
-    res.json(panels);
+
+    // if filtering by appointmentID we return one panel (or null)
+    if (appointmentID) {
+      const panel = await Sigmapanel
+        .findOne(query)
+        .populate(populateAll);
+      return res.json(panel);             // may be null if none found
+    }
+
+    // otherwise return an array (possibly filtered by patientID, or all)
+    const panels = await Sigmapanel
+      .find(query)
+      .sort({ visitDateTime: -1 })        // newest first
+      .populate(populateAll);
+
+    return res.json(panels);
   } catch (err) {
     console.error('listSigmapanels error:', err);
-    res.status(500).json({ error: 'Failed to list sigma panels' });
+    return res
+      .status(500)
+      .json({ error: 'Failed to list sigmapanels' });
   }
 };
 
@@ -28,27 +45,34 @@ export const createSigmapanel = async (req, res) => {
   try {
     const panel = new Sigmapanel(req.body);
     await panel.save();
-    const full = await Sigmapanel.findById(panel._id).populate(populateAll);
-    res.status(201).json(full);
+
+    // return with all populated paths
+    const full = await Sigmapanel
+      .findById(panel._id)
+      .populate(populateAll);
+
+    return res.status(201).json(full);
   } catch (err) {
     console.error('createSigmapanel error:', err);
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 
 export const updateSigmapanel = async (req, res) => {
   try {
     const updates = { ...req.body };
-    const panel = await Sigmapanel.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      { new: true }
-    ).populate(populateAll);
-    if (!panel) return res.status(404).json({ error: 'Sigma panel not found' });
-    res.json(panel);
+    const panel = await Sigmapanel
+      .findByIdAndUpdate(req.params.id, updates, { new: true })
+      .populate(populateAll);
+
+    if (!panel) {
+      return res.status(404).json({ error: 'Sigmapanel not found' });
+    }
+
+    return res.json(panel);
   } catch (err) {
     console.error('updateSigmapanel error:', err);
-    res.status(400).json({ error: err.message });
+    return res.status(400).json({ error: err.message });
   }
 };
 
@@ -57,10 +81,14 @@ export const getSigmapanel = async (req, res) => {
     const panel = await Sigmapanel
       .findById(req.params.id)
       .populate(populateAll);
-    if (!panel) return res.status(404).json({ error: 'Sigma panel not found' });
-    res.json(panel);
+
+    if (!panel) {
+      return res.status(404).json({ error: 'Sigmapanel not found' });
+    }
+
+    return res.json(panel);
   } catch (err) {
     console.error('getSigmapanel error:', err);
-    res.status(400).json({ error: 'Invalid sigma panel ID' });
+    return res.status(400).json({ error: 'Invalid sigmapanel ID' });
   }
 };

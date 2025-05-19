@@ -1,3 +1,4 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,16 +8,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        accent: '#b5cd39',
-        'accent-hover': '#1daf06',
+        // neutrals
+        "gray-dark": "#002408", // for your main body copy
+        "gray-base": "#003b08", // for secondary text/icons
+
+        // accents (light backgrounds)
+        "accent-100": "#18ac00", // default button bg
+        "accent-200": "#92ca27", // hover state
+        "accent-300": "#bcd522", // focus state
+
+        // **WCAG-compliant** text on any accent
+        "on-accent": "#000000",
       }
     },
   },
   plugins: [],
-  variants: {
-    extend: {
-      display: ["focus-group"]
-    },
-  },
 }
-

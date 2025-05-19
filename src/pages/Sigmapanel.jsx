@@ -1,97 +1,157 @@
 // src/pages/SigmaPanel.jsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
-import axios from 'axios';
-import '../css/Sigmapanel.css';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
+import axios from 'axios'
+import '../css/Sigmapanel.css'
 
+// ── CONFIG ARRAYS ────────────────────────────────
+const vitalsConfig = [
+  { key: 'vHeight',        label: 'Height' },
+  { key: 'vWeight',        label: 'Weight' },
+  { key: 'vTemp',          label: 'Temperature' },
+  { key: 'vBloodPressure', label: 'Blood Pressure' },
+  { key: 'vPulseRate',     label: 'Pulse Rate' },
+]
+
+const historyConfig = [
+  { key: 'mhMedicalHistory',     label: 'Medical History' },
+  { key: 'mhFamilyHistory',      label: 'Family History' },
+  { key: 'mhSocialHistory',      label: 'Social History' },
+  { key: 'mhAllergies',          label: 'Allergies' },
+  { key: 'mhCurrentMedications', label: 'Current Medications' },
+]
+
+const diagnosisConfig = [
+  { key: 'diagnosis',    label: 'Diagnosis' },
+  { key: 'plMedication',  label: 'Prescribed Medication' },
+  { key: 'plReferrals',   label: 'Referrals' },
+  { key: 'plFollowup',    label: 'Follow-up' },
+  { key: 'plProcedures',  label: 'Procedures' },
+  { key: 'notes',         label: 'Notes' },
+]
+
+// ── REUSABLE HOOK ────────────────────────────────
+function useFormFields(config) {
+  const [fields, setFields] = useState(
+    config.reduce((acc, { key }) => ({ ...acc, [key]: '' }), {})
+  )
+
+  const handleChange = e => {
+    const { name, value } = e.target
+    setFields(old => ({ ...old, [name]: value }))
+  }
+
+  return [fields, handleChange, setFields]
+}
+
+// ── PAGE COMPONENT ────────────────────────────────
 export default function SigmaPanel() {
-  const navigate = useNavigate();
-  const { state } = useLocation();
+  const navigate = useNavigate()
+  const { state = {} } = useLocation()
   const {
     appointmentId,
     patientId,
     doctorId,
-    clinicId,    
+    clinicId,
     patientName,
     patientAge,
     patientSex,
     clinicName,
     appointmentDate,
     appointmentTime
-  } = state || {};
+  } = state
 
-  // ── LOCAL STATE ──
-  const [viewDate, setViewDate] = useState(new Date().toISOString().slice(0,10));
-  const [vitals,    setVitals]    = useState({ vWeight:'', vHeight:'', vBmi:'', vTemp:'', vBloodPressure:'', vPulseRate:'' });
-  const [history,   setHistory]   = useState({ mhMedicalHistory:'', mhFamilyHistory:'', mhSocialHistory:'', mhAllergies:'', mhCurrentMedications:'' });
-  const [diagnosis, setDiagnosis] = useState({ diagnosis:'', plMedication:'', plReferrals:'', plFollowup:'', plProcedures:'', notes:'' });
-  const [panelId,   setPanelId]   = useState(null);
-  const [started,   setStarted]   = useState(false);
+  const [panels,          setPanels]          = useState([])
+  const [selectedPanelId, setSelectedPanelId] = useState('')
+  const [viewDate,        setViewDate]        = useState('')
 
-  // 1) LOAD existing panel (if any) by appointmentId
-  useEffect(() => {
-    if (!appointmentId) return;
-    (async () => {
-      try {
-        // our backend GET /api/sigmapanels?appointmentID=...
-        const { data } = await axios.get(`/api/sigmapanels?appointmentID=${appointmentId}`);
-        if (data) {
-          setPanelId(data._id);
-          setVitals({
-            vWeight:          data.vWeight || '',
-            vHeight:          data.vHeight || '',
-            vBmi:             data.vBmi || '',
-            vTemp:            data.vTemp || '',
-            vBloodPressure:   data.vBloodPressure || '',
-            vPulseRate:       data.vPulseRate || ''
-          });
-          setHistory({
-            mhMedicalHistory:     data.mhMedicalHistory || '',
-            mhFamilyHistory:      data.mhFamilyHistory || '',
-            mhSocialHistory:      data.mhSocialHistory || '',
-            mhAllergies:          data.mhAllergies || '',
-            mhCurrentMedications: data.mhCurrentMedications || ''
-          });
-          setDiagnosis({
-            diagnosis:    data.diagnosis || '',
-            plMedication: data.plMedication || '',
-            plReferrals:  data.plReferrals || '',
-            plFollowup:   data.plFollowup || '',
-            plProcedures: data.plProcedures || '',
-            notes:        data.notes || ''
-          });
-          if (data.createdAt) setStarted(true); 
-        }
-      } catch (err) {
-        console.error('load panel error:', err);
-      }
-    })();
-  }, [appointmentId]);
+  const [vitals,    , setVitals]    = useFormFields(vitalsConfig)
+  const [history,   , setHistory]   = useFormFields(historyConfig)
+  const [diagnosis, , setDiagnosis] = useFormFields(diagnosisConfig)
+  const [started, setStarted] = useState(false)
 
-  // 2) MARK appointment.started on *first* field change
+  const formatDate = ds => {
+    if (!ds) return '--'
+    const [y,m,d] = ds.split('-').map(Number)
+    return new Date(y,m-1,d).toLocaleDateString('en-US',{
+      timeZone: 'America/Toronto',
+      year:  'numeric',
+      month: 'short',
+      day:   'numeric'
+    })
+  }
+
   const markStarted = async () => {
-   
     if (!started && appointmentId) {
-      await axios.put(`/api/appointments/${appointmentId}`, {
-        started: new Date().toISOString()
-      });     
+      try {
+        await axios.put(`/api/appointments/${appointmentId}`, {
+          started: new Date().toISOString()
+        })
+        setStarted(true)
+      } catch (err) {
+        console.error(err)
+      }
     }
-  };
+  }
 
-  // generic change handler that also marks started
-  const handleChange = (setter) => (e) => {
-    const { name, value } = e.target;
-    setter(old => ({ ...old, [name]: value }));
-    markStarted();
-  };
+  useEffect(() => {
+    if (!patientId) return
+    ;(async () => {
+      try {
+        const { data } = await axios.get(
+          `/api/sigmapanels?patientID=${patientId}`
+        )
+        const valid = (Array.isArray(data) ? data : [])
+          .filter(p => p.appointmentID?.date)
+          .sort((a,b) =>
+            new Date(b.appointmentID.date) - new Date(a.appointmentID.date)
+          )
 
-  // 3) SAVE panel + END appointment
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!patientId || !doctorId || !appointmentId) {
-      return alert('Missing patient, doctor or appointment ID');
+        setPanels(valid)
+        const current = valid.find(p => p.appointmentID._id === appointmentId)
+        setSelectedPanelId(current ? current._id : valid[0]?._id || '')
+      } catch (err) {
+        console.error('fetch panels:', err)
+      }
+    })()
+  }, [patientId, appointmentId])
+
+  useEffect(() => {
+    const panel = panels.find(p => p._id === selectedPanelId)
+    if (!panel) {
+      setViewDate('')
+      return
     }
+
+    setViewDate(formatDate(panel.appointmentID.date))
+
+    setVitals(
+      vitalsConfig.reduce((acc, { key }) => ({
+        ...acc,
+        [key]: panel[key] || ''
+      }), {})
+    )
+    setHistory(
+      historyConfig.reduce((acc, { key }) => ({
+        ...acc,
+        [key]: panel[key] || ''
+      }), {})
+    )
+    setDiagnosis(
+      diagnosisConfig.reduce((acc, { key }) => ({
+        ...acc,
+        [key]: panel[key] || ''
+      }), {})
+    )
+    setStarted(!!panel.started)
+  }, [selectedPanelId, panels])
+
+  const handleSubmit = async e => {
+    e.preventDefault()
+    if (!patientId || !doctorId || !appointmentId)
+      return alert('Missing IDs')
+
     try {
       const payload = {
         patientID:     patientId,
@@ -101,116 +161,165 @@ export default function SigmaPanel() {
         ...vitals,
         ...history,
         ...diagnosis
-      };
-
-      let savedPanel;
-      if (panelId) {
-        // UPDATE existing
-        await axios.put(`/api/sigmapanels/${panelId}`, payload);
-      } else {
-        // CREATE new
-        const { data: newPanel } = await axios.post('/api/sigmapanels', payload);
-        setPanelId(newPanel._id);
       }
 
-      // NOW end the appointment
+      if (selectedPanelId) {
+        await axios.put(`/api/sigmapanels/${selectedPanelId}`, payload)
+      } else {
+        const { data: newPanel } = await axios.post(
+          '/api/sigmapanels', payload
+        )
+        setSelectedPanelId(newPanel._id)
+      }
+
       await axios.put(`/api/appointments/${appointmentId}`, {
         ended: new Date().toISOString()
-      });
+      })
 
-      // NAVIGATE to checkout
       navigate('/checkout', {
         state: {
-          patientId, appointmentId, doctorId, clinicId, clinicName, patientName, 
-          appointmentDate, appointmentTime, panelId
+          patientId,
+          appointmentId,
+          doctorId,
+          clinicId,
+          clinicName,
+          patientName,
+          appointmentDate,
+          appointmentTime,
+          sigmapanelId: selectedPanelId
         }
-      });
+      })
     } catch (err) {
-      console.error('save panel error:', err);
-      alert('Save failed');
+      console.error(err)
+      alert('Save failed')
     }
-  };
+  }
+
+  const inputClass = `
+    block w-full text-gray-dark placeholder-gray-base
+    bg-white border border-gray-base rounded-lg
+    px-4 py-2
+    hover:bg-accent-100/10
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-200
+  `
+  const buttonClass = `
+    bg-accent-100 hover:bg-accent-200
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
+    text-on-accent font-semibold p-3 rounded
+  `
 
   return (
-    <div className="sigmapanel-container">
-      <div className="sigmapanel-header">
-        <button onClick={()=>navigate('/appointments')} className="back-btn" title="Back">
-          <ChevronLeft size={24}/>
-        </button>
-        <div className="patient-info">
-          <h2>{patientName || 'Unknown'}</h2>
-          <div className="sub">{patientAge} | {patientSex}</div>
-          <div className="sub">{clinicName}</div>
+    <div className="sigmapanel-container h-full flex flex-col p-3">
+      {/* HEADER */}
+      <div className="bg-white p-3 rounded shadow flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center">
+          <button
+            onClick={() => navigate('/appointments')}
+            className={`${buttonClass} p-2 rounded-full`}
+            aria-label="Back to appointments"
+          >
+            <ChevronLeft size={24}/>
+          </button>
+          <div className="ml-4">
+            <h2 className="font-bold uppercase">{patientName || 'Unknown'}</h2>
+            <div className="text-sm text-gray-base">
+              {patientAge} | {patientSex}
+            </div>
+            <div className="text-sm text-gray-base">{clinicName}</div>
+          </div>
         </div>
-        <div className="visit-date">
-          <label>Visit Date</label>
-          <input
-            type="date"
-            value={viewDate}
-            onChange={e=>setViewDate(e.target.value)}
-          />
+        <div>
+          <select
+            aria-label="Visit Date"
+            className={inputClass}
+            value={selectedPanelId}
+            onChange={e => setSelectedPanelId(e.target.value)}
+            disabled={!panels.length}
+          >
+            {!panels.length
+              ? <option>No visits</option>
+              : panels.map(p => (
+                  <option key={p._id} value={p._id}>
+                    {formatDate(p.appointmentID.date)}
+                  </option>
+                ))
+            }
+          </select>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="sigmapanel-form">
-        <section className="panel-section">
-          <h3>Vitals</h3>
-          <div className="grid-2">
-            {Object.entries(vitals).map(([k,v]) => (
+      {/* CONTENT */}
+      <div className="flex-1 flex flex-col overflow-hidden mt-0">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-3 items-stretch overflow-auto"
+        >
+          {/* Vitals: 20% on lg */}
+          <section className="lg:col-span-1 bg-white p-3 rounded shadow space-y-2 h-full">
+            <h3 className="font-semibold mb-2">Vitals</h3>
+            {vitalsConfig.map(({ key, label }) => (
               <input
-                key={k}
-                name={k}
-                value={v}
-                onChange={handleChange(setVitals)}
-                placeholder={k}
+                key={key}
+                name={key}
+                placeholder={label}
+                aria-label={label}
+                value={vitals[key]}
+                onChange={e => { markStarted(); setVitals(old => ({ ...old, [key]: e.target.value })) }}
+                className={inputClass}
               />
             ))}
-          </div>
-        </section>
+          </section>
 
-        <section className="panel-section">
-          <h3>Medical History</h3>
-          <div className="grid-1">
-            {Object.entries(history).map(([k,v]) => (
+          {/* Medical History: 40% on lg */}
+          <section className="lg:col-span-2 bg-white p-3 rounded shadow space-y-2 h-full">
+            <h3 className="font-semibold mb-2">History</h3>
+            {historyConfig.map(({ key, label }) => (
               <textarea
-                key={k}
-                name={k}
-                value={v}
-                onChange={handleChange(setHistory)}
-                placeholder={k}
+                key={key}
+                name={key}
+                placeholder={label}
+                aria-label={label}
+                value={history[key]}
+                onChange={e => { markStarted(); setHistory(old => ({ ...old, [key]: e.target.value })) }}
+                className={`${inputClass} h-24`}
               />
             ))}
-          </div>
-        </section>
+          </section>
 
-        <section className="panel-section">
-          <h3>Diagnosis & Plan</h3>
-          <div className="grid-1">
-            {Object.entries(diagnosis).map(([k,v]) =>
-              k === 'notes' ? (
-                <textarea
-                  key={k}
-                  name={k}
-                  value={v}
-                  onChange={handleChange(setDiagnosis)}
-                  placeholder={k}
-                />
-              ) : (
-                <input
-                  key={k}
-                  name={k}
-                  value={v}
-                  onChange={handleChange(setDiagnosis)}
-                  placeholder={k}
-                />
-              )
-            )}
-          </div>
-          <button type="submit" className="end-visit-btn">
-            End Clinic Visit
-          </button>
-        </section>
-      </form>
+          {/* Diagnosis & Plan: 40% on lg */}
+          <section className="lg:col-span-2 bg-white p-3 rounded shadow flex flex-col justify-between h-full">
+            <div className="space-y-2 overflow-auto">
+              <h3 className="font-semibold mb-2">Diagnosis &amp; Plan</h3>
+              {diagnosisConfig.map(({ key, label }) =>
+                key === 'plMedication'|| key === 'notes' || key === 'plProcedures'? (
+                  <textarea
+                    key={key}
+                    name={key}
+                    placeholder={label}
+                    aria-label={label}
+                    value={diagnosis[key]}
+                    onChange={e => { markStarted(); setDiagnosis(old => ({ ...old, [key]: e.target.value })) }}
+                    className={`${inputClass} h-24`}
+                  />
+                ) : (
+                  <input
+                    key={key}
+                    name={key}
+                    placeholder={label}
+                    aria-label={label}
+                    value={diagnosis[key]}
+                    onChange={e => { markStarted(); setDiagnosis(old => ({ ...old, [key]: e.target.value })) }}
+                    className={inputClass}
+                  />
+                )
+              )}
+            </div>
+            <button type="submit" className={`${buttonClass} mt-2`}>
+              End Clinic Visit
+            </button>
+          </section>
+        </form>
+      </div>
     </div>
-  );
+  )
 }

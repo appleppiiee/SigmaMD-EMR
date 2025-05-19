@@ -1,11 +1,14 @@
-import "../css/Patients.css";  
+// src/pages/Patients.jsx
+import "../css/Patients.css";
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { FaUserCircle, FaEdit } from 'react-icons/fa';
 
 export default function Patient() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
-  const [formData, setFormData] = useState({
+  const defaultForm = {
     firstname: '',
     middlename: '',
     lastname: '',
@@ -17,12 +20,52 @@ export default function Patient() {
     maritalStatus: '',
     bloodType: '',
     address: ''
-  });
-  const [search, setSearch] = useState('');
-  const [editId, setEditId] = useState(null);
+  };
+
+  const [formData, setFormData] = useState(defaultForm);
+  const [search,   setSearch]   = useState('');
+  const [editId,   setEditId]   = useState(null);
   const token = localStorage.getItem('token');
 
-  // Fetch patients once
+  // WCAG-friendly classes
+  const inputClass = `
+    block w-full text-gray-dark placeholder-gray-base
+    bg-white border border-gray-base rounded-lg
+    px-4 py-2
+    hover:bg-accent-100/10
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-200
+  `.trim().replace(/\s+/g,' ');
+  const buttonPrimary = `
+    bg-accent-200 text-on-accent
+    hover:bg-accent-200
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
+    font-medium px-5 py-2 rounded-full
+  `.trim().replace(/\s+/g,' ');
+  const buttonSecondary = `
+    border-2 border-accent-100 text-on-accent bg-transparent
+    hover:bg-accent-100/10
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
+    font-medium px-5 py-2 rounded-full
+  `.trim().replace(/\s+/g,' ');
+  const saveBtn = `
+    flex-1
+    bg-accent-100 hover:bg-accent-200
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
+    text-on-accent font-semibold px-4 py-2 rounded-full
+  `.trim().replace(/\s+/g,' ');
+  const clearBtn = `
+    flex-1 bg-transparent border-2 border-red-500 text-red-600
+    hover:bg-red-50
+    focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2
+    font-medium px-4 py-2 rounded-full
+  `.trim().replace(/\s+/g,' ');
+  const editBtn = `
+    text-accent-100 hover:text-accent-200
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-200
+    text-lg font-bold
+  `.trim().replace(/\s+/g,' ');
+
+  // Fetch patients
   useEffect(() => {
     axios.get('/api/patients', {
       headers: { Authorization: `Bearer ${token}` }
@@ -34,29 +77,32 @@ export default function Patient() {
     });
   }, []);
 
+  const clearForm = () => {
+    setFormData(defaultForm);
+    setEditId(null);
+  };
+
   const handleChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // When user clicks "Edit", populate form with that patient's data
   const handleEdit = patient => {
     setFormData({
-      firstname: patient.firstname || '',
-      middlename: patient.middlename || '',
-      lastname: patient.lastname || '',
-      mobile: patient.mobile || '',
-      emailAddress: patient.emailAddress || '',
-      dob: patient.dob ? patient.dob.substring(0, 10) : '',
-      sex: patient.sex || '',
-      remarks: patient.remarks || '',
+      firstname:     patient.firstname || '',
+      middlename:    patient.middlename || '',
+      lastname:      patient.lastname || '',
+      mobile:        patient.mobile || '',
+      emailAddress:  patient.emailAddress || '',
+      dob:           patient.dob?.substring(0,10) || '',
+      sex:           patient.sex || '',
+      remarks:       patient.remarks || '',
       maritalStatus: patient.maritalStatus || '',
-      bloodType: patient.bloodType || '',
-      address: patient.address || ''
+      bloodType:     patient.bloodType || '',
+      address:       patient.address || ''
     });
     setEditId(patient._id);
   };
 
-  // Add or update patient on form submit
   const addOrUpdatePatient = async e => {
     e.preventDefault();
     try {
@@ -66,223 +112,197 @@ export default function Patient() {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(prev => prev.map(p => p._id === editId ? res.data : p));
-        setEditId(null);
       } else {
         const res = await axios.post('/api/patients', payload, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(prev => [...prev, res.data]);
       }
-      // Reset form
-      setFormData({
-        firstname: '',
-        middlename: '',
-        lastname: '',
-        mobile: '',
-        emailAddress: '',
-        dob: '',
-        sex: '',
-        remarks: '',
-        maritalStatus: '',
-        bloodType: '',
-        address: ''
-      });
+      clearForm();
     } catch (err) {
-      console.error('Failed to submit patient:', err.response?.data || err.message);
+      console.error('Failed to submit patient:', err);
       alert('Failed to add patient. Please check required fields.');
     }
   };
 
-  // Filtered list for search
   const filtered = patients.filter(p =>
-    `${p.lastname} ${p.firstname} ${p.middlename}`.toLowerCase().includes(search.toLowerCase())
+    `${p.lastname} ${p.firstname} ${p.middlename}`
+      .toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div style={{ display: "flex" }}>
-      <div className="main-content w-full patients">
-        {/* Full‐height container minus Topbar height */}
-        <div
-          className="flex flex-col lg:flex-row gap-6 p-6"
-          style={{ height: 'calc(100vh - 4rem)' }}
+    <div className="flex h-full p-3">
+      <div className="w-full flex flex-col lg:flex-row gap-3">
+        {/* Left: Form */}
+        <form
+          onSubmit={addOrUpdatePatient}
+          className="w-full  bg-white p-6 rounded-lg shadow space-y-5 overflow-y-auto"
         >
-          {/* Add/Edit Patient Form */}
-          <form
-            onSubmit={addOrUpdatePatient}
-            className="w-full lg:w-1/2 bg-white p-6 rounded shadow flex flex-col overflow-y-auto"
-          >
-            <h2 className="text-xl font-bold mb-4">
-              {editId ? "EDIT PATIENT" : "ADD PATIENT"}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                name="firstname"
-                placeholder="Enter First Name"
-                value={formData.firstname}
-                onChange={handleChange}
-                className="border p-2"
-                required
-              />
-
-              <input
-                name="middlename"
-                placeholder="Enter Middle Name"
-                value={formData.middlename}
-                onChange={handleChange}
-                className="border p-2"
-              />
-
-              <input
-                name="lastname"
-                placeholder="Enter Last Name"
-                value={formData.lastname}
-                onChange={handleChange}
-                className="border p-2"
-                required
-              />
-
-              <input
-                name="mobile"
-                placeholder="Enter Mobile No"
-                value={formData.mobile}
-                onChange={handleChange}
-                className="border p-2"
-              />
-
-              <input
-                name="emailAddress"
-                type="email"
-                placeholder="Email Address"
-                value={formData.emailAddress}
-                onChange={handleChange}
-                className="border p-2"
-              />
-
-              <input
-                name="dob"
-                type="date"
-                value={formData.dob}
-                onChange={handleChange}
-                className="border p-2"
-              />
-
-              {/* NEW Sex Field */}
-              <select
-                name="sex"
-                value={formData.sex}
-                onChange={handleChange}
-                className="border p-2"
-              >
-                <option value="">Select Sex</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-
-              <select
-                name="maritalStatus"
-                value={formData.maritalStatus}
-                onChange={handleChange}
-                className="border p-2"
-              >
-                <option value="">Select Marital Status</option>
-                <option value="Single">Single</option>
-                <option value="Married">Married</option>
-                <option value="Divorced">Divorced</option>
-                <option value="Widowed">Widowed</option>
-              </select>
-
-              <select
-                name="bloodType"
-                value={formData.bloodType}
-                onChange={handleChange}
-                className="border p-2"
-              >
-                <option value="">Select Blood Type</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
-            </div>
-
-            <textarea
-              name="address"
-              placeholder="Enter Complete Address"
-              value={formData.address}
-              onChange={handleChange}
-              className="border p-2 w-full mt-4 flex-shrink-0"
-            />
-
-            <input
-              name="remarks"
-              placeholder="Enter Remarks"
-              value={formData.remarks}
-              onChange={handleChange}
-              className="border p-2 w-full mt-3 flex-shrink-0"
-            />
-
-            <button
-              type="submit"
-              className="bg-[rgb(181 205 57 / var(--tw-text-opacity, 1))]  text-white w-full py-3 rounded mt-4
-                         hover:bg-[#1daf06] transition flex-shrink-0"
-            >
-              {editId ? "Update Patient" : "Add Patient"}
+          <div className="space-x-4 mb-4">
+            <button type="button" className={buttonPrimary}>
+              Patient
             </button>
-          </form>
+            <button
+              type="button"
+              onClick={() => navigate('/appointments')}
+              className={buttonSecondary}
+            >
+              Add Appointment
+            </button>
+          </div>
 
-          {/* Patient List */}
-          <div className="w-full lg:w-1/2 bg-white p-6 rounded shadow flex flex-col overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">PATIENT LIST</h2>
+         
 
-            <div className="mb-4 flex-shrink-0">
-              <label className="block font-medium mb-1">Filter Patients</label>
-              <input
-                className="border p-2 w-full"
-                placeholder="Search..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              name="firstname"
+              placeholder="First Name"
+              value={formData.firstname}
+              onChange={handleChange}
+              className={inputClass}
+              required
+            />
+            <input
+              name="middlename"
+              placeholder="Middle Name"
+              value={formData.middlename}
+              onChange={handleChange}
+              className={inputClass}
+            />
+            <input
+              name="lastname"
+              placeholder="Last Name"
+              value={formData.lastname}
+              onChange={handleChange}
+              className={inputClass}
+              required
+            />
+            <input
+              name="mobile"
+              placeholder="Mobile No"
+              value={formData.mobile}
+              onChange={handleChange}
+              className={inputClass}
+            />
+            <input
+              name="emailAddress"
+              type="email"
+              placeholder="Email Address"
+              value={formData.emailAddress}
+              onChange={handleChange}
+              className={inputClass}
+            />
+            <input
+              name="dob"
+              type="date"
+              value={formData.dob}
+              onChange={handleChange}
+              className={inputClass}
+            />
+            <select
+              name="sex"
+              value={formData.sex}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="">Select Sex</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+            <select
+              name="maritalStatus"
+              value={formData.maritalStatus}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="">Select Marital Status</option>
+              <option>Single</option>
+              <option>Married</option>
+              <option>Divorced</option>
+              <option>Widowed</option>
+            </select>
+            <select
+              name="bloodType"
+              value={formData.bloodType}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="">Select Blood Type</option>
+              <option>A+</option>
+              <option>A-</option>
+              <option>B+</option>
+              <option>B-</option>
+              <option>AB+</option>
+              <option>AB-</option>
+              <option>O+</option>
+              <option>O-</option>
+            </select>
+          </div>
 
-            {/* Scrollable list */}
-            <div className="space-y-4 flex-1 overflow-y-auto">
-              {filtered.length === 0 && <p>No patients found.</p>}
+          <textarea
+            name="address"
+            placeholder="Address"
+            value={formData.address}
+            onChange={handleChange}
+            className={`${inputClass} `}
+          />
 
-              {filtered.map(patient => (
-                <div
-                  key={patient._id}
-                  className="flex items-start bg-gray-50 p-4 rounded justify-between"
+          <textarea
+            name="remarks"
+            placeholder="Remarks"
+            value={formData.remarks}
+            onChange={handleChange}
+            className={`${inputClass} `}
+          />
+
+          <div className="flex space-x-2">
+            <button type="submit" className={saveBtn}>
+              Save
+            </button>
+            <button type="button" onClick={clearForm} className={clearBtn}>
+              Clear
+            </button>
+          </div>
+        </form>
+
+        {/* Right: List */}
+        <div className="w-full  bg-white p-6 rounded-lg shadow flex flex-col">
+          <input
+            className={`${inputClass} mb-4`}
+            placeholder="Search Patient"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          <ul className="space-y-4 overflow-y-auto flex-1">
+            {filtered.length === 0
+              ? <li className="text-center text-gray-base">No patients found.</li>
+              : filtered.map(p => (
+                <li
+                  key={p._id}
+                  className="p-4 border rounded-lg flex justify-between items-center hover:bg-accent-100/10 cursor-pointer"
                 >
-                  <div className="flex items-start gap-4">
-                    <FaUserCircle size={30} className="text-gray-400 mt-1" />
+                  <div className="flex items-center gap-4">
+                    <FaUserCircle size={30} className="text-gray-base" />
                     <div>
-                      <p className="font-bold">
-                        {patient.lastname}, {patient.firstname} {patient.middlename}
+                      <p className="font-bold text-gray-dark">
+                        {p.lastname}, {p.firstname} {p.middlename}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {patient.mobile || 'Mobile Number'} &nbsp;|&nbsp;
-                        {patient.dob?.substring(0, 10) || 'Date Of Birth'} &nbsp;|&nbsp;
-                        {patient.sex || 'N/A'} 
-                        {/* {patient.remarks || 'Remarks'} */}
+                      <p className="text-sm text-gray-base">
+                        {p.mobile || 'N/A'} &nbsp;|&nbsp; {p.dob?.substring(0,10) || 'DOB'} &nbsp;|&nbsp; {p.sex || 'N/A'}
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => handleEdit(patient)}
-                    className="text-accent text-lg font-bold hover:text-accent-hover" 
-                    title="Edit"
+                    onClick={() => handleEdit(p)}
+                    className={editBtn}
+                    aria-label="Edit patient"
                   >
                     <FaEdit />
                   </button>
-                </div>
-              ))}
-            </div>
-          </div>
+                </li>
+              ))
+            }
+          </ul>
         </div>
       </div>
     </div>

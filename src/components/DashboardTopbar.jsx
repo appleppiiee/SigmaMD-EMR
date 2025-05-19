@@ -43,7 +43,7 @@ const DashboardTopbar = ({ sectionTitle }) => {
 
         {dropdownOpen && (
           <div className="dropdown-menu">
-            <button onClick={handleLogout}>Sign Out</button>
+            <button className="hover:bg-accent-100/10 " onClick={handleLogout}>Sign Out</button>
           </div>
         )}
       </div>

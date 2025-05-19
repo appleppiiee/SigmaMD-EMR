@@ -6,8 +6,6 @@ import {
   list,
   read,
   update,
-  remove,
-  deleteAllUsers,
   userByID
 } from "../controllers/user.controller.js";
 
@@ -20,11 +18,9 @@ router.post("/", create);
 router.post("/login", login);
 
 router.get("/", list);
-router.delete("/all", deleteAllUsers);
 router.route("/:userId")
   .get(read)
-  .put(update)
-  .delete(remove);
+  .put(update);
 
 router.param("userId", userByID);
 

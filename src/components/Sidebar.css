@@ -50,10 +50,10 @@
     text-decoration: none;
   }
   
-  .sidebar-link:hover {
+  /* .sidebar-link:hover {
     background-color: #f0f4f8;
     border-radius: 4px;
-  }
+  } */
   
   .sidebar-icon {
     margin-right: 0.5rem;

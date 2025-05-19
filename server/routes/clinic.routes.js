@@ -1,17 +1,16 @@
+// src/routes/clinic.routes.js
 import express from 'express';
-import * as clinicController from '../controllers/clinic.controller.js';
+import {
+  listClinics,
+  createClinic,
+  updateClinic
+} from '../controllers/clinic.controller.js';  
 
 const router = express.Router();
 
-// List all clinics
-router.get('/', clinicController.listClinics);
-
-// Add a new clinic
-router.post('/', clinicController.createClinic);
-
-
-router.delete('/:id', clinicController.deleteClinic);
-
-
+// Public CRUD endpoints for clinics
+router.get('/',    listClinics);
+router.post('/',   createClinic);
+router.put('/:id', updateClinic);
 
 export default router;

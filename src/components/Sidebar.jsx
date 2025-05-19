@@ -24,13 +24,11 @@ const Sidebar = ({ role }) => {
 
       <div className="sidebar-section">
         {/* <h3>APPOINTMENT</h3> */}
-        <NavLink to="/appointments" className="sidebar-link">
+        <NavLink to="/appointments" className="sidebar-link hover:bg-accent-100/10 ">
           <FaCalendarAlt className="sidebar-icon" /> Sigmapanel
         </NavLink>
-        {/* <NavLink to="/sigmapanel" className="sidebar-link">
-          <FaHeartbeat className="sidebar-icon" /> Sigma Panel
-        </NavLink> */}
-        <NavLink to="/patient" className="sidebar-link">
+       
+        <NavLink to="/patient" className="sidebar-link hover:bg-accent-100/10 ">
           <FaUser className="sidebar-icon" /> Patient
         </NavLink>
       </div>
@@ -41,22 +39,16 @@ const Sidebar = ({ role }) => {
         <h3>SETTINGS</h3>
         {canViewSettings && (
           <>
-            <NavLink to="/settings/user" className="sidebar-link">
+            <NavLink to="/settings/user" className="sidebar-link hover:bg-accent-100/10 ">
               <FaUser className="sidebar-icon" /> User
             </NavLink>
-            <NavLink to="/settings/clinic" className="sidebar-link">
+            <NavLink to="/settings/clinic" className="sidebar-link hover:bg-accent-100/10 ">
               <FaHospital className="sidebar-icon" /> Clinic
             </NavLink>
           </>
         )}
       </div>
 
-      {/* <div className="sidebar-section">
-        <h3>OTHERS</h3>
-        <NavLink to="/checkout" className="sidebar-link">
-          <FaCogs className="sidebar-icon" /> Checkout
-        </NavLink>
-      </div> */}
     </div>
   );
 };

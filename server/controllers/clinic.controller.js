@@ -1,37 +1,59 @@
 import Clinic from '../models/clinic.model.js';
 
-// List all clinics
+/**
+ * List all clinics (no admin filter)
+ */
 export const listClinics = async (req, res) => {
   try {
-    const clinics = await Clinic.find().select('name nameaddress address phone mobileNo remarks providerID adminID status createdAt updatedAt');
+    const clinics = await Clinic.find()
+      .populate('doctorIDs', 'firstName lastName')
+      .populate('secretaryIDs', 'firstName lastName')
+      .select('-__v');
     res.json(clinics);
   } catch (err) {
+    console.error('Error fetching clinics:', err);
     res.status(500).json({ error: 'Failed to fetch clinics' });
   }
 };
 
-// Create a new clinic
+/**
+ * Create a new clinic
+ */
 export const createClinic = async (req, res) => {
   try {
     const clinic = new Clinic(req.body);
     await clinic.save();
-    res.status(201).json(clinic);
+    const populated = await clinic
+      .populate('doctorIDs', 'firstName lastName')
+      .populate('secretaryIDs', 'firstName lastName')
+      .execPopulate();
+    res.status(201).json(populated);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create clinic', details: err.message });
+    console.error('Error creating clinic:', err);
+    res.status(400).json({ error: err.message });
   }
 };
 
-// Delete clinic by ID
-export const deleteClinic = async (req, res) => {
+/**
+ * Update an existing clinic by ID
+ */
+export const updateClinic = async (req, res) => {
   try {
-    const clinic = await Clinic.findById(req.params.id);
+    const { id } = req.params;
+    const clinic = await Clinic.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true
+    })
+      .populate('doctorIDs', 'firstName lastName')
+      .populate('secretaryIDs', 'firstName lastName');
+
     if (!clinic) {
       return res.status(404).json({ error: 'Clinic not found' });
     }
-
-    await clinic.deleteOne();
-    res.json({ message: 'Clinic removed' });
+    res.json(clinic);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to remove clinic' });
+    console.error('Error updating clinic:', err);
+    res.status(400).json({ error: err.message });
   }
 };
+

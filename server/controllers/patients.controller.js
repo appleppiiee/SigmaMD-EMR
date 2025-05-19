@@ -41,12 +41,3 @@ export const updatePatient = async (req, res) => {
     res.status(500).json({ error: 'Failed to update patient' });
   }
 };
-
-export const deletePatient = async (req, res) => {
-  try {
-    await Patient.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Patient deleted' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to delete patient' });
-  }
-};

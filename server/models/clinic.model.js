@@ -1,54 +1,46 @@
 import mongoose from 'mongoose';
 
 const ClinicSchema = new mongoose.Schema({
-  // Display name of the clinic (used in dropdowns)
   name: {
     type: String,
     trim: true,
-    required: [true, 'Clinic name is required'],
+    required: [true, 'Clinic name is required']
   },
-  // For legacy data support, fallback if name is missing
   nameaddress: {
     type: String,
     trim: true,
+    required: [true, 'Address is required']
   },
-  address: {
-    type: String,
-    trim: true,
-  },
-  phone: {
-    type: String,
-    trim: true,
-  },
+  phone: { type: String, trim: true },
   mobileNo: {
     type: String,
     trim: true,
+    required: [true, 'Mobile number is required']
   },
-  remarks: {
-    type: String,
-    trim: true,
-  },
-  providerID: {
-    type: String,
-    trim: true,
-  },
+  remarks: { type: String, trim: true },
+
+  doctorIDs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'At least one physician is required']
+  }],
+  secretaryIDs: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+
   adminID: {
-    type: String,
-    trim: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   status: {
     type: String,
     trim: true,
-    default: 'a', // 'a' for active, 'i' for inactive
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
+    default: 'a'
   }
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
 export default mongoose.model('Clinic', ClinicSchema);

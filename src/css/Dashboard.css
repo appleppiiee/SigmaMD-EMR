@@ -1,47 +1,40 @@
-/* 1. Let #root fill the viewport */
 html, body, #root {
   height: 100%;
   margin: 0;
 }
 
-/* 2. Shell flex container: sidebar + main panel */
 .dashboard-container {
   display: flex;
   height: 100vh;
   overflow: hidden;
 }
 
-/* 3. Sidebar: fixed width, own scroll */
 .sidebar-wall {
-  width: 240px;           /* adjust to match your logo/sidebar */
+  width: 240px;           
   flex-shrink: 0;
   height: 100%;
   overflow-y: auto;
-  background: #fff;       /* if you need a background */
+  background: #fff;      
   border-right: 1px solid #ececec;
 }
 
-/* 4. Main content area: column flex */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  margin-left:180px; /* adjust to match your sidebar width */
+  margin-left:180px; 
 }
 
-/* 5. Topbar: fixed height */
 .dashboard-topbar {
-  flex: 0 0 64px;         /* match your Topbar height in DashboardTopbar.css */
+  flex: 0 0 64px;        
   border-bottom: 1px solid #ececec;
   background: #fff;
 }
 
-/* 6. The children below Topbar scroll */
 .dashboard-main-area {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;          /* your padding of choice */
-  background: #f9f9f9;    /* optional */
+  background: #f9f9f9;    
 }
