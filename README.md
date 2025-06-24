@@ -56,10 +56,7 @@ SigmaMD follows WCAG 2.1 AA guidelines:
 
 * Apple Jan Tacardon
 * Gabriel Vincent Abarra
-* Xiaomin Guo
 * Chester Bugarin
-* Akanksha Gurram
-* Ayushi Parmar
 
 ---
 

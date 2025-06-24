@@ -1,0 +1,26 @@
+sigmapanel and checkout changes
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch main
+# Your branch is up to date with 'origin/main'.
+#
+# Changes to be committed:
+#	modified:   server/controllers/appointment.controller.js
+#	modified:   server/controllers/checkout.controller.js
+#	modified:   server/controllers/sigmapanel.controller.js
+#	modified:   server/express.js
+#	modified:   server/models/checkout.model.js
+#	modified:   server/models/sigmapanel.model.js
+#	modified:   server/routes/appointment.routes.js
+#	modified:   server/routes/checkout.routes.js
+#	modified:   server/routes/sigmapanel.routes.js
+#	deleted:    src/appointments.jsx
+#	modified:   src/css/Sigmapanel.css
+#	modified:   src/main.jsx
+#	modified:   src/pages/Appointments.jsx
+#	modified:   src/pages/Checkout.jsx
+#	modified:   src/pages/Sigmapanel.jsx
+#	modified:   vite.config.js
+#
