@@ -1,3 +1,6 @@
+/* -----------------------------------
+   Section Container
+----------------------------------- */
 .team-section {
   background-color: #f9fdf9;
   padding: 60px 24px;
@@ -5,7 +8,22 @@
   overflow: hidden;
 }
 
+.team-section .section-title {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* -----------------------------------
+   Scroll Wrapper & Track (CENTERED)
+----------------------------------- */
+/*
+  Make the wrapper a flex container and center its contents.
+  Remove any fixed width on the track so it can shrink‐wrap to exactly the three cards.
+*/
 .team-scroll-wrapper {
+  display: flex;
+  justify-content: center;  /* <-- centers the .team-scroll-track inside */
   overflow: hidden;
   position: relative;
   margin-top: 2rem;
@@ -14,10 +32,13 @@
 .team-scroll-track {
   display: flex;
   gap: 2rem;
-  animation: scroll 30s linear infinite;
-  width: max-content;
+  /* Remove width: max-content; so that this track only takes as much width as needed */
+  /* (no scrolling animation, so no animation property) */
 }
 
+/* -----------------------------------
+   Individual Team Card
+----------------------------------- */
 .team-card {
   background-color: #ffffff;
   border-radius: 10px;
@@ -37,8 +58,8 @@
   height: 220px;
   object-fit: cover;
   border-radius: 12px;
+  margin-bottom: 1rem;
 }
-
 
 .team-card h4 {
   color: #4caf50;
@@ -52,11 +73,10 @@
   font-size: 0.95rem;
 }
 
-@keyframes scroll {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
+/* -----------------------------------
+   (No keyframes needed since we removed animation)
+----------------------------------- */
+/* @keyframes scroll {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+} */

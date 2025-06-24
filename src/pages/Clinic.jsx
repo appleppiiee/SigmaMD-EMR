@@ -1,4 +1,6 @@
 // src/pages/Clinic.jsx
+
+// Import necessary styles and components
 import "../css/Clinics.css";
 import { FiSearch } from "react-icons/fi";
 import { FaHospital, FaEdit } from "react-icons/fa";
@@ -11,7 +13,7 @@ import Select from "react-select";
 export default function Clinic() {
   const navigate = useNavigate();
 
-  // Default form values
+  // Define default form values
   const defaultValues = {
     name: "",
     nameaddress: "",
@@ -22,7 +24,7 @@ export default function Clinic() {
     secretaryIDs: []
   };
 
-  // React-Hook-Form
+  // React Hook Form setup
   const {
     register,
     handleSubmit,
@@ -32,45 +34,50 @@ export default function Clinic() {
     formState: { errors }
   } = useForm({ defaultValues });
 
-  // WCAG-friendly classes
+  // Define Tailwind-based UI classes for consistent styling
   const inputClass = `
     block w-full text-gray-dark placeholder-gray-base
     bg-white border border-gray-base rounded-lg
     px-4 py-2
     hover:bg-accent-100/10
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-200
-  `.trim().replace(/\s+/g,' ');
+  `.trim().replace(/\s+/g, ' ');
+
   const buttonPrimary = `
     bg-accent-200 text-on-accent
     hover:bg-accent-200
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
     font-medium px-5 py-2 rounded-full
-  `.trim().replace(/\s+/g,' ');
+  `.trim().replace(/\s+/g, ' ');
+
   const buttonSecondary = `
     border-2 border-accent-100 text-on-accent bg-transparent
     hover:bg-accent-100/10
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-300
     font-medium px-5 py-2 rounded-full
-  `.trim().replace(/\s+/g,' ');
+  `.trim().replace(/\s+/g, ' ');
+
   const saveBtn = `
     flex-1 bg-accent-100 text-on-accent
     hover:bg-accent-200
     focus:outline-none focus:ring-2 focus:ring-accent-300 focus:ring-offset-2
     font-semibold px-4 py-2 rounded-full
-  `.trim().replace(/\s+/g,' ');
+  `.trim().replace(/\s+/g, ' ');
+
   const clearBtn = `
     flex-1 bg-transparent border-2 border-red-500 text-red-600
-      hover:bg-red-50
-      focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2
-      font-medium px-4 py-2 rounded-full
-  `.trim().replace(/\s+/g,' ');
+    hover:bg-red-50
+    focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2
+    font-medium px-4 py-2 rounded-full
+  `.trim().replace(/\s+/g, ' ');
+
   const editBtn = `
     text-accent-100 hover:text-accent-200
     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-200
     text-lg font-bold
-  `.trim().replace(/\s+/g,' ');
+  `.trim().replace(/\s+/g, ' ');
 
-  // Load users for selects
+  // Load user data for select inputs
   const [users, setUsers] = useState([]);
   useEffect(() => {
     axios.get("/api/users")
@@ -78,11 +85,12 @@ export default function Clinic() {
       .catch(() => console.warn("Failed loading users"));
   }, []);
 
-  // Clinics list
-  const [clinics, setClinics]       = useState(null);
+  // Manage clinic state
+  const [clinics, setClinics] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [editId, setEditId]         = useState(null);
+  const [editId, setEditId] = useState(null);
 
+  // Fetch all clinics from API
   useEffect(() => {
     axios.get("/api/clinics")
       .then(r => setClinics(r.data))
@@ -92,6 +100,7 @@ export default function Clinic() {
       });
   }, []);
 
+  // Handle form submission for creating or updating clinics
   const onSubmit = async data => {
     const payload = {
       name: data.name,
@@ -120,6 +129,7 @@ export default function Clinic() {
     }
   };
 
+  // Populate form with data when editing a clinic
   const handleEdit = c => {
     setEditId(c._id);
     setValue("name", c.name);
@@ -127,41 +137,43 @@ export default function Clinic() {
     setValue("mobileNo", c.mobileNo);
     setValue("phoneNo", c.phone);
     setValue("remarks", c.remarks);
-    setValue(
-      "doctorIDs",
-      c.doctorIDs.map(u => ({ value: u._id, label: `${u.firstName} ${u.lastName}` }))
-    );
-    setValue(
-      "secretaryIDs",
-      c.secretaryIDs.map(u => ({ value: u._id, label: `${u.firstName} ${u.lastName}` }))
-    );
+    setValue("doctorIDs", c.doctorIDs.map(u => ({
+      value: u._id,
+      label: `${u.firstName} ${u.lastName}`
+    })));
+    setValue("secretaryIDs", c.secretaryIDs.map(u => ({
+      value: u._id,
+      label: `${u.firstName} ${u.lastName}`
+    })));
   };
 
+  // Show loading state before clinics are fetched
   if (clinics === null) return <div className="p-8">Loading…</div>;
 
+  // Filter clinics based on search term
   const filtered = clinics.filter(c =>
     (c.name + c.nameaddress).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const doctorOptions = users.filter(u => u.userType === "provider")
+  // Generate dropdown options from users
+  const doctorOptions = users.filter(u => u.userType === "physician")
     .map(u => ({ value: u._id, label: `${u.firstName} ${u.lastName}` }));
   const secretaryOptions = users.filter(u => u.userType === "secretary")
     .map(u => ({ value: u._id, label: `${u.firstName} ${u.lastName}` }));
 
+  // Render the form and list layout
   return (
     <div className="flex p-3 h-full">
       <div className="w-full flex flex-col lg:flex-row gap-3">
 
-        {/* FORM */}
+        {/* Clinic Form Panel */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="w-full lg:w-2/5 bg-white p-6 rounded-lg shadow space-y-5 overflow-y-auto"
         >
-          {/* Toggle Buttons */}
+          {/* Navigation Buttons */}
           <div className="space-x-4 mb-4">
-            <button type="button" className={buttonPrimary}>
-              Clinic
-            </button>
+            <button type="button" className={buttonPrimary}>Clinic</button>
             <button
               type="button"
               onClick={() => navigate('/settings/user')}
@@ -171,31 +183,17 @@ export default function Clinic() {
             </button>
           </div>
 
-          <input
-            {...register("name", { required: true })}
-            placeholder="Name"
-            className={inputClass}
-          />
+          {/* Form Fields */}
+          <input {...register("name", { required: true })} placeholder="Name" className={inputClass} />
           {errors.name && <p className="text-red-500 text-sm">Required</p>}
 
-          <input
-            {...register("nameaddress", { required: true })}
-            placeholder="Address"
-            className={inputClass}
-          />
+          <input {...register("nameaddress", { required: true })} placeholder="Address" className={inputClass} />
           {errors.nameaddress && <p className="text-red-500 text-sm">Required</p>}
 
-          <input
-            {...register("mobileNo")}
-            placeholder="Mobile No"
-            className={inputClass} 
-          />
-          <input
-            {...register("phoneNo")}
-            placeholder="Phone No"
-            className={inputClass}
-          />
+          <input {...register("mobileNo")} placeholder="Mobile No" className={inputClass} />
+          <input {...register("phoneNo")} placeholder="Phone No" className={inputClass} />
 
+          {/* Physician Selector */}
           <Controller
             name="doctorIDs"
             control={control}
@@ -213,6 +211,7 @@ export default function Clinic() {
           />
           {errors.doctorIDs && <p className="text-red-500 text-sm">Choose at least one</p>}
 
+          {/* Secretary Selector */}
           <Controller
             name="secretaryIDs"
             control={control}
@@ -228,12 +227,9 @@ export default function Clinic() {
             )}
           />
 
-          <input
-            {...register("remarks")}
-            placeholder="Remarks"
-            className={inputClass}
-          />
+          <input {...register("remarks")} placeholder="Remarks" className={inputClass} />
 
+          {/* Submit and Clear Buttons */}
           <div className="flex space-x-2">
             <button type="submit" className={saveBtn}>
               {editId ? "Update" : "Save"}
@@ -248,10 +244,9 @@ export default function Clinic() {
           </div>
         </form>
 
-        {/* LIST */}
+        {/* Clinic List Panel */}
         <div className="w-full lg:w-3/5 bg-white p-6 rounded-lg shadow flex flex-col overflow-y-auto">
           <div className="mb-4 flex items-center gap-2">
-            
             <input
               type="text"
               value={searchTerm}
