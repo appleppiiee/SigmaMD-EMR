@@ -14,6 +14,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+logs/
+
+# PM2
+pm2.log
+pids/
 
 # dotenv environment files
 .env
@@ -34,14 +39,15 @@ Thumbs.db
 .cache/
 *.swp
 
-# Optional: Ignore coverage reports
+# Coverage reports
 coverage/
 
-# Optional: Ignore compiled JS if using TypeScript somewhere
+# TypeScript build info
 *.tsbuildinfo
 
-# MongoDB dump files (if any)
+# MongoDB dump / data (if you ever use it)
 dump/
+data/
 
-# Optional: Ignore uploads (customize this)
+# Optional: Ignore uploads folder
 uploads/
