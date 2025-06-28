@@ -1,6 +1,42 @@
 import Clinic from '../models/clinic.model.js';
 
 /**
+ * Helper: ensure the “default” signup clinic exists,
+ * create it if necessary, and return it.
+ */
+export async function getOrCreateDefaultClinic() {
+  const defaults = {
+    name:        'clinic 1',
+    nameaddress: 'clinic 1',
+    mobileNo:    '00000000'
+  };
+
+  let clinic = await Clinic.findOne({ name: defaults.name });
+  if (!clinic) {
+    clinic = new Clinic(defaults);
+    await clinic.save();
+  }
+
+  return clinic;
+}
+
+/**
+ * Special-purpose endpoint for signup flows:
+ * calls getOrCreateDefaultClinic and returns that clinic.
+ *
+ * POST /api/clinics/signup
+ */
+export const signupCreateClinic = async (req, res) => {
+  try {
+    const clinic = await getOrCreateDefaultClinic();
+    return res.status(201).json(clinic);
+  } catch (err) {
+    console.error('signupCreateClinic error:', err);
+    return res.status(500).json({ error: errorHandler.getErrorMessage(err) });
+  }
+};
+
+/**
  * List all clinics (no admin filter)
  */
 export const listClinics = async (req, res) => {

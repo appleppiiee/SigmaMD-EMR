@@ -1,23 +1,30 @@
-/**
- * Signup.jsx
- * Renders the user registration page for the SigmaMD platform.
- * Provides form inputs for user details and handles account creation via API.
- */
-
+// src/pages/Signup.jsx
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import "./Signup.css";
 import LandingNavbar from "../Landing/LandingNavbar";
 import axios from "axios";
 
-/**
- * Signup component
- * Uses React Hook Form to manage form state and validation.
- * Submits data to the backend API to register a new user.
- */
+// 1) Ensures default clinic exists (or creates it) via your signupCreateClinic endpoint
+async function getOrCreateDefaultClinic() {
+  const { data } = await axios.post(
+    "http://localhost:3000/api/clinics/signup"
+  );
+  return data; // { _id, name, nameaddress, mobileNo, ... }
+}
+
+// 2) Calls your user-signup endpoint which attaches that clinicID under the hood
+async function signupCreateUser(userPayload) {
+  const { data } = await axios.post(
+    "http://localhost:3000/api/users/signup",
+    userPayload
+  );
+  return data; // the newly created user (safe version)
+}
+
 const Signup = () => {
-  // Initialize form handling
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -25,30 +32,34 @@ const Signup = () => {
   } = useForm();
 
   /**
-   * Handles form submission
-   * Sends user data to the backend and displays feedback to the user.
-   * @param {Object} data - Form data submitted by the user.
+   * 1) create or fetch default clinic
+   * 2) create the user with clinicID
    */
   const onSubmit = async (data) => {
     try {
-      // POST user registration data to the server
-      const res = await axios.post("http://localhost:3000/api/users", data);
+      // step 1: ensure default clinic
+      const clinic = await getOrCreateDefaultClinic();
+      // step 2: create user
+      const userPayload = {
+        ...data,
+        clinicID: clinic._id,
+      };
+      const newUser = await signupCreateUser(userPayload);
+
       alert("Registration successful!");
-      console.log(res.data);
+      console.log("Created user:", newUser);
+      return navigate("/signin");
     } catch (err) {
-      // Log and alert error if registration fails
-      console.error("Registration error:", err.response?.data || err.message);
-      alert("Registration failed. Check console.");
+      console.error("Signup error:", err.response?.data || err.message);
+      alert("Registration failed. See console for details.");
     }
   };
 
   return (
     <>
-      {/* Navbar for landing pages */}
       <LandingNavbar alwaysDark />
 
       <div className="signup-container">
-        {/* Left side illustration and marketing copy */}
         <div className="signup-illustration">
           <img src="/signup-illustration.png" alt="Doctor Illustration" />
           <div className="signup-overlay">
@@ -62,12 +73,10 @@ const Signup = () => {
           </div>
         </div>
 
-        {/* Right side form container */}
         <div className="signup-form-container">
           <h2>Welcome to Sigma Registration</h2>
           <p className="subtext">Register your account</p>
 
-          {/* Signup form begins here */}
           <form className="signup-form" onSubmit={handleSubmit(onSubmit)}>
             <div className="signup-grid">
               {/* First Name */}
@@ -77,29 +86,15 @@ const Signup = () => {
                   placeholder="Enter your first name"
                   {...register("firstName", { required: "First name is required" })}
                 />
-                {errors.firstName && <span className="error">⚠ {errors.firstName.message}</span>}
+                {errors.firstName && (
+                  <span className="error">⚠ {errors.firstName.message}</span>
+                )}
               </div>
 
-              {/* Mobile Number */}
-              <div className="form-group">
-                <label>Mobile Number *</label>
-                <input
-                  placeholder="Enter your mobile number"
-                  {...register("mobileNo", { required: "Mobile number is required" })}
-                />
-                {errors.mobileNo && <span className="error">⚠ {errors.mobileNo.message}</span>}
-              </div>
-
-              {/* Middle Name (optional) */}
+              {/* Middle Name */}
               <div className="form-group">
                 <label>Middle Name</label>
                 <input placeholder="Enter your middle name" {...register("middleName")} />
-              </div>
-
-              {/* Phone Number (optional) */}
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input placeholder="Enter your phone number" {...register("phoneNo")} />
               </div>
 
               {/* Last Name */}
@@ -109,39 +104,55 @@ const Signup = () => {
                   placeholder="Enter your last name"
                   {...register("lastName", { required: "Last name is required" })}
                 />
-                {errors.lastName && <span className="error">⚠ {errors.lastName.message}</span>}
+                {errors.lastName && (
+                  <span className="error">⚠ {errors.lastName.message}</span>
+                )}
               </div>
 
-              {/* User Type Selection */}
+              {/* Mobile Number */}
               <div className="form-group">
-                <label>User Type *</label>
-                <select
-                  className="custom-select"
-                  {...register("userType", { required: "Select a user type" })}
-                >
-                  <option value="">Select User Type</option>
-                  <option value="provider">Provider</option>
-                  <option value="secretary">Secretary</option>
-                  <option value="admin">Admin</option>
-                </select>
-                {errors.userType && <span className="error">⚠ {errors.userType.message}</span>}
+                <label>Mobile Number *</label>
+                <input
+                  placeholder="Enter your mobile number"
+                  {...register("mobileNo", { required: "Mobile number is required" })}
+                />
+                {errors.mobileNo && (
+                  <span className="error">⚠ {errors.mobileNo.message}</span>
+                )}
               </div>
 
-              {/* Email Address */}
+              {/* Email */}
               <div className="form-group">
                 <label>E-mail *</label>
                 <input
                   type="email"
-                  placeholder="Email address must include (@) and (.)"
+                  placeholder="Enter your email"
                   {...register("email", { required: "Email is required" })}
                 />
                 {errors.email && <span className="error">⚠ {errors.email.message}</span>}
               </div>
 
-              {/* Specialization (optional) */}
+              {/* User Type */}
+              <div className="form-group">
+                <label>User Type *</label>
+                <select {...register("userType", { required: "Select a user type" })}>
+                  <option value="">Select User Type</option>
+                  <option value="admin">Admin</option>
+                  <option value="physician">Physician</option>
+                  <option value="secretary">Secretary</option>
+                </select>
+                {errors.userType && (
+                  <span className="error">⚠ {errors.userType.message}</span>
+                )}
+              </div>
+
+              {/* Specialization */}
               <div className="form-group">
                 <label>Specialization</label>
-                <input placeholder="Enter your specialization" {...register("specialization")} />
+                <input
+                  placeholder="Enter your specialization"
+                  {...register("specialization")}
+                />
               </div>
 
               {/* Password */}
@@ -152,44 +163,46 @@ const Signup = () => {
                   placeholder="Enter your password"
                   {...register("password", { required: "Password is required" })}
                 />
-                {errors.password && <span className="error">⚠ {errors.password.message}</span>}
+                {errors.password && (
+                  <span className="error">⚠ {errors.password.message}</span>
+                )}
               </div>
 
-              {/* Availability (optional) */}
+              {/* Availability */}
               <div className="form-group">
                 <label>Availability</label>
-                <input placeholder="Enter your availability" {...register("availability")} />
+                <input
+                  placeholder="Enter your availability"
+                  {...register("availability")}
+                />
               </div>
             </div>
 
-            {/* Terms and Policy Agreement */}
+            {/* Terms & Privacy */}
             <div className="checkbox-wrapper">
-              <div className="checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    {...register("terms", { required: "You must agree to terms" })}
-                  />
-                  I agree to all the <a href="#">Terms</a>, <a href="#">Privacy Policy</a>
-                </label>
-              </div>
+              <label>
+                <input
+                  type="checkbox"
+                  {...register("terms", { required: "You must agree to terms" })}
+                />
+                I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+              </label>
               {errors.terms && <span className="error">⚠ {errors.terms.message}</span>}
             </div>
 
-            {/* Newsletter Subscription (optional) */}
+            {/* Newsletter */}
             <div className="checkbox-group">
               <label>
                 <input type="checkbox" {...register("newsletter")} />
-                Yes, I want to receive SigmaMD newsletters
+                Subscribe to SigmaMD newsletter
               </label>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button type="submit" className="signup-btn">
               Create Account
             </button>
 
-            {/* Redirect to login page if user already has an account */}
             <p className="signin-redirect">
               Already have an account? <Link to="/signin">Log In</Link>
             </p>

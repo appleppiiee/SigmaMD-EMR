@@ -17,8 +17,8 @@ const UserSchema = new mongoose.Schema({
     trim: true
   },
   dob: {
-    type: Date,
-    required: 'Date of birth is required'
+    type: Date
+    // required: 'Date of birth is required'
   },
   mobileNo: {
     type: String,
@@ -45,7 +45,7 @@ const UserSchema = new mongoose.Schema({
   },
   doctorType: {
     type: String, // e.g. "Surgeon", "Psychiatrist"
-    required: "Doctor type is required",
+    // required: "Doctor type is required",
   },
   specialization: {
     type: String, // e.g. "ENT", "Cardiology"

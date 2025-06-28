@@ -22,7 +22,7 @@ const ClinicSchema = new mongoose.Schema({
   doctorIDs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'At least one physician is required']
+    // required: [true, 'At least one physician is required']
   }],
   secretaryIDs: [{
     type: mongoose.Schema.Types.ObjectId,
